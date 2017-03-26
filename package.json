@@ -1,11 +1,12 @@
 {
   "name": "print-to-resist-backend",
   "version": "0.0.1",
-  "description": "Back end for print to resist",
+  "description": "Back end for Print to Resist",
   "main": "index.js",
-  "author": "Zach Gawlik <zachgawlik@gmail.com>",
+  "author": "Zach Gawlik",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "mysql": "^2.13.0"
   }
 }
