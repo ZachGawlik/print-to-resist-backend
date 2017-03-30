@@ -4,83 +4,79 @@ const multerConfig = require('../config/multerConfig');
 const pool = require('../config/mysqlConnector');
 const parseListingBody = require('../utils/parseListingBody');
 
+const using = require('bluebird').using;
 const upload = multer(multerConfig);
 const listingUpload = upload.fields([
   {name: 'poster', maxCount: 1},
   // {name: 'thumbnail', maxCount: 1}
 ]);
 
+function getPosterObj(poster, listing_id) {
+  return {
+    listing_id,
+    image_id: poster.filename,
+    mimetype: poster.mimetype
+  }
+}
+
 routes.get('/', (req, res) => {
   return res.status(200).json({ message: 'Connected!' });
 });
 
-function get_listings(req, res) {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      connection.release();
-      console.log(err.message);
-      return res.status(100).json({ message: 'Error connecting to database' })
-    }
-    console.log(`connected as id ${connection.threadId}`);
+function getSqlConnection() {
+  return pool.getConnectionAsync().disposer(connection => {
+    connection.release();
+  });
+}
 
-    connection.query('SELECT * FROM listings', (err, rows) => {
-      connection.release();
-      if (!err) {
-        return res.json(rows);
-      } else {
-        return res.status(100).json({ message: 'Error while performing query' });
-      }
-    });
+function handleSqlConnection(req, res, onConnection) {
+  using(
+    getSqlConnection(),
+    (connection) => onConnection(req, res, connection)
+  ).catch(err => {
+    console.error(`ERROR. ${err.message}`);
+    return res.status(500).json({ message: 'Error connecting to database' })
+  });
+}
+
+function getListings(req, res, connection) {
+  console.log(`connected as id ${connection.threadId}`);
+  return connection.queryAsync('SELECT * FROM listings')
+  .then(rows => res.json(rows))
+  .catch(err => {
+    console.error(`ERROR. ${err.message}`);
+    return res.status(500).json({ message: 'Error while performing query' });
+  });
+}
+
+function postListing(req, res, connection) {
+  console.log(`connected as id ${connection.threadId}`);
+  connection.beginTransactionAsync()
+  .then(() => connection.queryAsync(
+    'INSERT INTO listings SET ?',
+    parseListingBody(req)
+  ))
+  .then(results => connection.queryAsync(
+    'INSERT INTO images SET ?',
+    getPosterObj(req.files.poster[0], results.insertId)
+  ))
+  .then(() => connection.commitAsync()) // prevent passing in result argument
+  .then(() => {
+    return res.status(200).json({message: 'Created successfully'});
+  })
+  .catch(error => {
+    connection.rollback(() => next(error));
+    return res.status(500).json({message: 'ugh'});
   });
 }
 
 routes.get('/listing', (req, res, next) => {
-  get_listings(req, res);
+  handleSqlConnection(req, res, getListings)
 });
 
 // TODO: avoid uploading/saving the images unless success?
 routes.post('/listing', listingUpload, (req, res, next) => {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      return next(err);
-    }
-    console.log(`connected as id ${connection.threadId}`);
-
-    connection.beginTransaction(function(err) {
-      if (err) { throw err; }
-      connection.query(
-        'INSERT INTO listings SET ?',
-        parseListingBody(req),
-        (error, results, fields) => {
-          if (error) {
-            return connection.rollback(() => next(error));
-          }
-          const poster = req.files.poster[0];
-          const posterImage = {
-            image_id: poster.filename,
-            listing_id: results.insertId,
-            mimetype: poster.mimetype
-          };
-          connection.query(
-            'INSERT INTO images SET ?',
-            posterImage,
-            (error, results, fields) => {
-              if (error) {
-                connection.rollback(() => next(error));
-                return res.status(500).json({message: 'ugh'});
-              }
-              connection.commit(function(err) {
-                if (error) {
-                  return connection.rollback(() => next(error));
-                }
-                return res.status(200).json({message: 'Created successfully'});
-              });
-            }
-          );
-        }
-      );
-    });
-  });
+  handleSqlConnection(req, res, postListing)
 });
 
 module.exports = routes;
