@@ -11,6 +11,6 @@ function fileFilter(req, file, cb) {
       false
     );
   }
-  cb(null, true);
+  return cb(null, true);
 }
 module.exports = fileFilter;

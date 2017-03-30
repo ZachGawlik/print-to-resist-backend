@@ -1,0 +1,13 @@
+{
+  "env": {
+    "node": true
+  },
+  "extends": "airbnb-base",
+  "plugins": [
+      "import"
+  ],
+  "rules": {
+    "comma-dangle": 0,
+    "camelcase": 0
+  }
+}

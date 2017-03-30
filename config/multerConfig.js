@@ -6,8 +6,8 @@ const multerConfig = {
   dest: `${UPLOAD_FOLDER}/`,
   fileFilter,
   limits: {
-    fileSize: 2 * 10 ** 6, // 2MB
+    fileSize: 2 * (10 ** 6), // 2MB
   }
-}
+};
 
 module.exports = multerConfig;

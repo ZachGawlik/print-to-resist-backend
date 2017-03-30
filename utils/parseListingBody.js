@@ -5,7 +5,7 @@ function parseListingBody(req) {
     is_color: req.body.isColor === 'true',
     paper_size: req.body.paperSize,
     title: req.body.title
-  }
+  };
   if (req.body.deadline !== 'null') {
     listingBody.deadline = new Date(req.body.deadline);
   }
