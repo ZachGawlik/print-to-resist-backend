@@ -8,7 +8,7 @@ const Listing = require('../models/Listing');
 const upload = multer(multerConfig);
 const listingUpload = upload.fields([
   { name: 'poster', maxCount: 1 },
-  // {name: 'thumbnail', maxCount: 1}
+  { name: 'thumbnail', maxCount: 1 }
 ]);
 
 function getListings(req, res, connection) {
@@ -23,7 +23,7 @@ function getListings(req, res, connection) {
 function postListing(req, res, connection) {
   Listing.create(
     connection,
-    parseListingBody(req),
+    parseListingBody(req.body, req.files.thumbnail[0]),
     req.files.poster[0]
   )
   .then(() => res.status(200).json({ message: 'Created successfully' }))

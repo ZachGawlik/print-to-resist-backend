@@ -1,13 +1,15 @@
-function parseListingBody(req) {
+function parseListingBody(body, thumbnail) {
   const listingBody = {
-    description: req.body.description,
-    instruction: req.body.instruction,
-    is_color: req.body.isColor === 'true',
-    paper_size: req.body.paperSize,
-    title: req.body.title
+    description: body.description,
+    instruction: body.instruction,
+    is_color: body.isColor === 'true',
+    paper_size: body.paperSize,
+    title: body.title,
+    thumbnail_id: thumbnail.filename,
+    thumbnail_mimetype: thumbnail.mimetype
   };
-  if (req.body.deadline !== 'null') {
-    listingBody.deadline = new Date(req.body.deadline);
+  if (body.deadline !== 'null') {
+    listingBody.deadline = new Date(body.deadline);
   }
   return listingBody;
 }
