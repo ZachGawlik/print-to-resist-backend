@@ -2,6 +2,7 @@ const routes = require('express').Router();
 const multer = require('multer');
 const multerConfig = require('../config/multerConfig');
 const parseListingBody = require('../utils/parseListingBody');
+const parseMysqlListing = require('../utils/parseMysqlListing');
 const handleSqlConnection = require('../utils/handleSqlConnection');
 const Listing = require('../models/Listing');
 
@@ -13,6 +14,10 @@ const listingUpload = upload.fields([
 
 function getListings(req, res, connection) {
   return Listing.getAll(connection)
+  .then((rows) => {
+    const jsonRows = JSON.parse(JSON.stringify(rows));
+    return jsonRows.map(parseMysqlListing);
+  })
   .then(rows => res.json(rows))
   .catch((err) => {
     console.error(`ERROR. ${err.message}`);
