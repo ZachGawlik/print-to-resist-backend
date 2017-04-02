@@ -23,7 +23,12 @@ function getAll(connection) {
   return connection.queryAsync('SELECT * FROM listings');
 }
 
+function getOne(connection, listingId) {
+  return connection.queryAsync('SELECT * FROM listings WHERE listing_id = ?', listingId);
+}
+
 module.exports = {
   create,
-  getAll
+  getAll,
+  getOne
 };

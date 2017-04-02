@@ -12,6 +12,19 @@ const listingUpload = upload.fields([
   { name: 'thumbnail', maxCount: 1 }
 ]);
 
+function getListing(req, res, connection) {
+  return Listing.getOne(connection, req.params.listingId)
+  .then((rows) => {
+    if (rows.length === 0) {
+      throw Error(`Poster with id ${req.params.listingId} does not exist`);
+    }
+    const jsonRow = JSON.parse(JSON.stringify(rows[0]));
+    return parseMysqlListing(jsonRow);
+  })
+  .then(row => res.json(row))
+  .catch(err => res.status(500).json({ message: err.message }));
+}
+
 function getListings(req, res, connection) {
   return Listing.getAll(connection)
   .then((rows) => {
@@ -19,10 +32,7 @@ function getListings(req, res, connection) {
     return jsonRows.map(parseMysqlListing);
   })
   .then(rows => res.json(rows))
-  .catch((err) => {
-    console.error(`ERROR. ${err.message}`);
-    return res.status(500).json({ message: 'Error while performing query' });
-  });
+  .catch(err => res.status(500).json({ message: err.message }));
 }
 
 function postListing(req, res, connection) {
@@ -39,6 +49,13 @@ routes.get('/', (req, res) => res.status(200).json({ message: 'Connected!' }));
 
 routes.get('/listing', (req, res) => {
   handleSqlConnection(req, res, getListings);
+});
+
+routes.get('/listing/:listingId', (req, res) => {
+  if (isNaN(parseInt(req.params.listingId, 10))) {
+    return res.status(500).json({ message: 'Poster id must be a number' });
+  }
+  return handleSqlConnection(req, res, getListing);
 });
 
 // TODO: avoid uploading/saving the images unless success?
