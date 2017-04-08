@@ -19,11 +19,24 @@ function create(connection, listingObj, posterFilename) {
 }
 
 function getAll(connection) {
-  return connection.queryAsync('SELECT * FROM listings');
+  return connection.queryAsync(`
+    SELECT l.*, GROUP_CONCAT(i.image_id SEPARATOR ",") AS image_ids
+    FROM listings l
+    JOIN images i USING (listing_id)
+    GROUP BY l.listing_id;
+  `);
 }
 
 function getOne(connection, listingId) {
-  return connection.queryAsync('SELECT * FROM listings WHERE listing_id = ?', listingId);
+  return connection.queryAsync(
+    `SELECT l.*, GROUP_CONCAT(i.image_id SEPARATOR ",") AS image_ids
+    FROM listings l
+    JOIN images i USING (listing_id)
+    WHERE l.listing_id = ?
+    GROUP BY l.listing_id;
+    `,
+    listingId
+  );
 }
 
 module.exports = {

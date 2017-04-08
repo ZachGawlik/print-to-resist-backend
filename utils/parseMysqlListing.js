@@ -5,7 +5,8 @@ function parseListing(listing) {
   return Object.assign(
     {},
     camelcaseListing,
-    { isColor: camelcaseListing.isColor === 1 }
+    { isColor: camelcaseListing.isColor === 1 },
+    { imageIds: camelcaseListing.imageIds.split(',') }
   );
 }
 
