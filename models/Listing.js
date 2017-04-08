@@ -1,4 +1,4 @@
-function create(connection, listingObj, poster) {
+function create(connection, listingObj, posterFilename) {
   return connection.beginTransactionAsync()
   .then(() => connection.queryAsync(
     'INSERT INTO listings SET ?',
@@ -8,8 +8,7 @@ function create(connection, listingObj, poster) {
     'INSERT INTO images SET ?',
     {
       listing_id: results.insertId,
-      image_id: poster.filename,
-      mimetype: poster.mimetype
+      image_id: posterFilename,
     }
   ))
   .then(() => connection.commitAsync()) // prevent passing in result argument

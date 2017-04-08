@@ -1,9 +1,12 @@
 const routes = require('express').Router();
 const multer = require('multer');
 const multerConfig = require('../config/multerConfig');
+const deleteFileIfExists = require('../utils/deleteFileIfExists');
+const getSavedFilePath = require('../utils/getSavedFilePath');
 const parseListingBody = require('../utils/parseListingBody');
 const parseMysqlListing = require('../utils/parseMysqlListing');
 const handleSqlConnection = require('../utils/handleSqlConnection');
+const securelySaveImages = require('../utils/securelySaveImages');
 const Listing = require('../models/Listing');
 
 const upload = multer(multerConfig);
@@ -36,13 +39,29 @@ function getListings(req, res, connection) {
 }
 
 function postListing(req, res, connection) {
-  Listing.create(
-    connection,
-    parseListingBody(req.body, req.files.thumbnail[0]),
-    req.files.poster[0]
-  )
+  const tempThumbnail = req.files.thumbnail[0];
+  const tempPoster = req.files.poster[0];
+  let thumbnailFilename;
+  let posterFilename;
+
+  return securelySaveImages([tempThumbnail, tempPoster])
+  .then((newPaths) => {
+    thumbnailFilename = newPaths[0];
+    posterFilename = newPaths[1];
+    return Listing.create(
+      connection,
+      parseListingBody(req.body, thumbnailFilename),
+      posterFilename
+    );
+  })
   .then(() => res.status(200).json({ message: 'Created successfully' }))
-  .catch(() => res.status(500).json({ message: 'ugh' }));
+  .catch((err) => {
+    deleteFileIfExists(tempThumbnail.path);
+    deleteFileIfExists(tempPoster.path);
+    deleteFileIfExists(getSavedFilePath(thumbnailFilename));
+    deleteFileIfExists(getSavedFilePath(posterFilename));
+    return res.status(500).json({ message: err.message });
+  });
 }
 
 routes.get('/', (req, res) => res.status(200).json({ message: 'Connected!' }));
@@ -58,7 +77,6 @@ routes.get('/listing/:listingId', (req, res) => {
   return handleSqlConnection(req, res, getListing);
 });
 
-// TODO: avoid uploading/saving the images unless success?
 routes.post('/listing', listingUpload, (req, res) => {
   handleSqlConnection(req, res, postListing);
 });

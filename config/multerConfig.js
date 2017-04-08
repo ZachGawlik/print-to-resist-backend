@@ -1,9 +1,10 @@
+const multer = require('multer');
 const fileFilter = require('../utils/fileFilter');
 
-const UPLOAD_FOLDER = 'uploads';
-
 const multerConfig = {
-  dest: `${UPLOAD_FOLDER}/`,
+  storage: multer.diskStorage({
+    destination: '/tmp/uploads'
+  }),
   fileFilter,
   limits: {
     fileSize: 2 * (10 ** 6), // 2MB
