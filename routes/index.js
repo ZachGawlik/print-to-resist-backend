@@ -51,7 +51,8 @@ function postListing(req, res, connection) {
     return Listing.create(
       connection,
       parseListingBody(req.body, thumbnailFilename),
-      posterFilename
+      posterFilename,
+      req.body.tags
     );
   })
   .then(() => res.status(200).json({ message: 'Created successfully' }))

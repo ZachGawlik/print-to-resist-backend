@@ -6,7 +6,8 @@ function parseListing(listing) {
     {},
     camelcaseListing,
     { isColor: camelcaseListing.isColor === 1 },
-    { imageIds: camelcaseListing.imageIds.split(',') }
+    { imageIds: camelcaseListing.imageIds.split(',') },
+    { tags: camelcaseListing.tags ? camelcaseListing.tags.split(',') : [] }
   );
 }
 
