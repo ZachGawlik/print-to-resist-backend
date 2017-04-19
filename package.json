@@ -6,6 +6,7 @@
   "author": "Zach Gawlik",
   "license": "MIT",
   "dependencies": {
+    "app-root-path": "^2.0.1",
     "arrify": "^1.0.1",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
