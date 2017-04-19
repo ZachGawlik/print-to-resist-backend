@@ -6,6 +6,7 @@
   "author": "Zach Gawlik",
   "license": "MIT",
   "dependencies": {
+    "arrify": "^1.0.1",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.1",
     "camelcase-keys": "^4.1.0",

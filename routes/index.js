@@ -1,4 +1,5 @@
 const routes = require('express').Router();
+const arrify = require('arrify');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const multerConfig = require('../config/multerConfig');
@@ -55,7 +56,8 @@ function postListing(req, res, connection) {
       connection,
       parseListingBody(req.body, thumbnailFilename),
       posterFilename,
-      req.body.tags
+      arrify(req.body.tags),
+      arrify(req.body.links)
     );
   })
   .then(() => res.status(200).json({ message: 'Created successfully' }))
