@@ -1,5 +1,6 @@
 const routes = require('express').Router();
 const multer = require('multer');
+const bodyParser = require('body-parser');
 const multerConfig = require('../config/multerConfig');
 const deleteFileIfExists = require('../utils/deleteFileIfExists');
 const getSavedFilePath = require('../utils/getSavedFilePath');
@@ -8,7 +9,9 @@ const parseMysqlListing = require('../utils/parseMysqlListing');
 const handleSqlConnection = require('../utils/handleSqlConnection');
 const securelySaveImages = require('../utils/securelySaveImages');
 const Listing = require('../models/Listing');
+const Printing = require('../models/Printing');
 
+const jsonParser = bodyParser.json();
 const upload = multer(multerConfig);
 const listingUpload = upload.fields([
   { name: 'poster', maxCount: 1 },
@@ -65,6 +68,15 @@ function postListing(req, res, connection) {
   });
 }
 
+function postPrinting(req, res, connection) {
+  return Printing.create(connection, {
+    listing_id: req.params.listingId,
+    copies: req.body.copies
+  })
+  .then(() => res.status(200).json({ message: 'Printing added successfully' }))
+  .catch(err => res.status(500).json({ message: err.message }));
+}
+
 routes.get('/', (req, res) => res.status(200).json({ message: 'Connected!' }));
 
 routes.get('/listing', (req, res) => {
@@ -76,6 +88,10 @@ routes.get('/listing/:listingId', (req, res) => {
     return res.status(500).json({ message: 'Poster id must be a number' });
   }
   return handleSqlConnection(req, res, getListing);
+});
+
+routes.post('/listing/:listingId/printings', jsonParser, (req, res) => {
+  handleSqlConnection(req, res, postPrinting);
 });
 
 routes.post('/listing', listingUpload, (req, res) => {

@@ -7,7 +7,7 @@ const multerConfig = {
   }),
   fileFilter,
   limits: {
-    fileSize: 2 * (10 ** 6), // 2MB
+    fileSize: 10 * (10 ** 6), // 10MB
   }
 };
 
