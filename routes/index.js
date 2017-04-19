@@ -6,7 +6,6 @@ const multerConfig = require('../config/multerConfig');
 const deleteFileIfExists = require('../utils/deleteFileIfExists');
 const getSavedFilePath = require('../utils/getSavedFilePath');
 const parseListingBody = require('../utils/parseListingBody');
-const parseMysqlListing = require('../utils/parseMysqlListing');
 const handleSqlConnection = require('../utils/handleSqlConnection');
 const securelySaveImages = require('../utils/securelySaveImages');
 const Listing = require('../models/Listing');
@@ -21,23 +20,12 @@ const listingUpload = upload.fields([
 
 function getListing(req, res, connection) {
   return Listing.getOne(connection, req.params.listingId)
-  .then((rows) => {
-    if (rows.length === 0) {
-      throw Error(`Poster with id ${req.params.listingId} does not exist`);
-    }
-    const jsonRow = JSON.parse(JSON.stringify(rows[0]));
-    return parseMysqlListing(jsonRow);
-  })
   .then(row => res.json(row))
   .catch(err => res.status(500).json({ message: err.message }));
 }
 
 function getListings(req, res, connection) {
   return Listing.getAll(connection)
-  .then((rows) => {
-    const jsonRows = JSON.parse(JSON.stringify(rows));
-    return jsonRows.map(parseMysqlListing);
-  })
   .then(rows => res.json(rows))
   .catch(err => res.status(500).json({ message: err.message }));
 }

@@ -1,3 +1,5 @@
+const parseMysqlListing = require('../utils/parseMysqlListing');
+
 function createTag(connection, listingId, tag) {
   return connection.queryAsync(
     'INSERT INTO tags SET ?',
@@ -66,11 +68,22 @@ const getQuery = `
 const getOneQuery = `${getQuery} WHERE l.listing_id = ?`;
 
 function getAll(connection) {
-  return connection.queryAsync(getQuery);
+  return connection.queryAsync(getQuery)
+  .then((rows) => {
+    const jsonRows = JSON.parse(JSON.stringify(rows));
+    return jsonRows.map(parseMysqlListing);
+  });
 }
 
 function getOne(connection, listingId) {
-  return connection.queryAsync(getOneQuery, listingId);
+  return connection.queryAsync(getOneQuery, listingId)
+  .then((rows) => {
+    if (rows.length === 0) {
+      throw Error(`Poster with id ${listingId} does not exist`);
+    }
+    const jsonRow = JSON.parse(JSON.stringify(rows[0]));
+    return parseMysqlListing(jsonRow);
+  });
 }
 
 module.exports = {
