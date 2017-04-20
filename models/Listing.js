@@ -52,32 +52,19 @@ function create(connection, listingObj, posterFilename, tags, links) {
   });
 }
 
-const getQuery = `
-  SELECT l.*,
-         (SELECT GROUP_CONCAT(image_id SEPARATOR ",")
-          FROM images
-          WHERE listing_id = l.listing_id) AS image_ids,
-         (SELECT GROUP_CONCAT(tag SEPARATOR ",")
-          FROM tags
-          WHERE listing_id = l.listing_id) AS tags,
-         (SELECT GROUP_CONCAT(url SEPARATOR ",")
-          FROM links
-          WHERE listing_id = l.listing_id) AS links
-  FROM listings l
-`;
-const getOneQuery = `${getQuery} WHERE l.listing_id = ?`;
-
 function getAll(connection) {
-  return connection.queryAsync(getQuery)
-  .then((rows) => {
+  return connection.queryAsync('CALL get_approved_listings()')
+  .then((result) => {
+    const rows = result[0];
     const jsonRows = JSON.parse(JSON.stringify(rows));
     return jsonRows.map(parseMysqlListing);
   });
 }
 
 function getOne(connection, listingId) {
-  return connection.queryAsync(getOneQuery, listingId)
-  .then((rows) => {
+  return connection.queryAsync('CALL get_one_listing(?)', listingId)
+  .then((result) => {
+    const rows = result[0];
     if (rows.length === 0) {
       throw Error(`Poster with id ${listingId} does not exist`);
     }
