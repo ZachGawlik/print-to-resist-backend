@@ -1,14 +1,8 @@
 const using = require('bluebird').using;
 const deleteFileIfExists = require('../utils/deleteFileIfExists');
 const getSavedFilePath = require('../utils/getSavedFilePath');
-const pool = require('../config/mysqlConnector');
+const getSqlConnection = require('../utils/getSqlConnection');
 const Listing = require('../models/Listing');
-
-function getSqlConnection() {
-  return pool.getConnectionAsync().disposer((connection) => {
-    connection.release();
-  });
-}
 
 async function deleteListingAndImages(connection, listingId) {
   const listing = await Listing.getOne(connection, listingId);

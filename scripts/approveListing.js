@@ -1,11 +1,5 @@
 const using = require('bluebird').using;
-const pool = require('../config/mysqlConnector');
-
-function getSqlConnection() {
-  return pool.getConnectionAsync().disposer((connection) => {
-    connection.release();
-  });
-}
+const getSqlConnection = require('../utils/getSqlConnection');
 
 async function approveListing(connection, listingId) {
   connection.queryAsync('CALL approve_listing(?)', listingId)
