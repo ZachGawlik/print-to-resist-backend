@@ -69,22 +69,22 @@ function postPrinting(req, res, connection) {
 
 routes.get('/', (req, res) => res.status(200).json({ message: 'Connected!' }));
 
-routes.get('/listing', (req, res) => {
+routes.get('/listings', (req, res) => {
   handleSqlConnection(req, res, getListings);
 });
 
-routes.get('/listing/:listingId', (req, res) => {
+routes.get('/listings/:listingId', (req, res) => {
   if (isNaN(parseInt(req.params.listingId, 10))) {
     return res.status(500).json({ message: 'Poster id must be a number' });
   }
   return handleSqlConnection(req, res, getListing);
 });
 
-routes.post('/listing/:listingId/printings', jsonParser, (req, res) => {
+routes.post('/listings/:listingId/printings', jsonParser, (req, res) => {
   handleSqlConnection(req, res, postPrinting);
 });
 
-routes.post('/listing', listingUpload, (req, res) => {
+routes.post('/listings', listingUpload, (req, res) => {
   handleSqlConnection(req, res, postListing);
 });
 
