@@ -1,10 +1,10 @@
 const config = {
   development: {
     db: {
-      host: '',
+      host: 'localhost',
       user: '',
       password: '',
-      database: '',
+      database: 'print_to_resist'
     },
     server: {
       port: 4000
